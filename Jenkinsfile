@@ -36,11 +36,11 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker build \\ 
-                      --no-cache \\
-                      -t ${DOCKER_IMAGE} \\
-                      -t saiteja0605/finocplus:latest \\
-                      . || { echo 'Docker build failed'; exit 1; }
+                    docker build --no-cache \
+  -t saiteja0605/finocplus:build-${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(8)} \
+  -t saiteja0605/finocplus:latest \
+  . || { echo 'Docker build failed'; exit 1; }
+
                     """
                 }
             }
