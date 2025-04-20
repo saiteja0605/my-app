@@ -3,7 +3,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "saiteja0605/finocplus:build-${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(8)}"
         KUBE_NAMESPACE = "finocplus-prod"
-        PATH = "/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:${env.PATH}"  // Ensure /bin is in the PATH
+        PATH = "/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:${env.PATH}"  // Explicitly ensure /bin is included
     }
     stages {
         stage('Checkout') {
