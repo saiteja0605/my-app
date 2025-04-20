@@ -3,7 +3,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "saiteja0605/finocplus:build-${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(8)}"
         KUBE_NAMESPACE = "finocplus-prod"
-        PATH = "/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:${env.PATH}" // Add Docker path
+        PATH = "/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:${env.PATH}"  // Ensure /bin is in the PATH
     }
     stages {
         stage('Checkout') {
@@ -23,6 +23,7 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    echo "Running as user: $(whoami)"
                     echo "PATH: $PATH"
                     echo "Docker binary location: $(which docker)"
                     docker info || { echo 'Docker is not accessible'; exit 1; }
