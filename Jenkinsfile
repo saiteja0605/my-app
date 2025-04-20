@@ -36,7 +36,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker build \\
+                    docker build \\ 
                       --no-cache \\
                       -t ${DOCKER_IMAGE} \\
                       -t saiteja0605/finocplus:latest \\
@@ -88,21 +88,6 @@ pipeline {
         always {
             sh 'docker logout || true'
             cleanWs()
-        }
-        success {
-            slackSend channel: '#deployments',
-                color: 'good',
-                message: """SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}
-                Image: ${DOCKER_IMAGE}
-                Namespace: ${KUBE_NAMESPACE}
-                Commit: ${env.GIT_COMMIT.take(8)}"""
-        }
-        failure {
-            slackSend channel: '#alerts',
-                color: 'danger',
-                message: """FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}
-                Commit: ${env.GIT_COMMIT.take(8)}
-                Build URL: ${env.BUILD_URL}"""
         }
     }
 }
