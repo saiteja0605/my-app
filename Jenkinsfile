@@ -4,11 +4,15 @@ pipeline {
         DOCKER_IMAGE = "saiteja0605/finocplus:build-${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(8)}"
         KUBE_NAMESPACE = "finocplus-prod"
     }
-    stages {
+   
         stage('Checkout') {
             steps {
-                // Explicitly checkout the 'main' branch
-                git branch: 'main', url: 'https://github.com/saiteja0605/my-app.git'
+                script {
+                    checkout([$class: 'GitSCM',
+                        branches: [[name: 'origin/main']],
+                        userRemoteConfigs: [[url: 'https://github.com/saiteja0605/my-app.git']]
+                    ])
+                }
             }
         }
 
