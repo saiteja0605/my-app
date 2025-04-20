@@ -9,7 +9,7 @@ pipeline {
             steps {
                 script {
                     checkout([$class: 'GitSCM',
-                        branches: [[name: 'origin/main']],
+                        branches: [[name: 'refs/heads/main']], 
                         userRemoteConfigs: [[url: 'https://github.com/saiteja0605/my-app.git']]
                     ])
                 }
