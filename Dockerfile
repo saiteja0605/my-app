@@ -1,15 +1,15 @@
-# Build stage
+# Stage 1 - Builder
 FROM node:16 AS builder
 WORKDIR /app
+
 COPY package*.json ./
-# Force create node_modules and verify installation
-RUN mkdir -p node_modules && \
-    npm install --omit=dev --verbose && \
-    ls -la node_modules
+RUN npm install --omit=dev
+
 COPY . .
 
-# Runtime stage
+# Stage 2 - Final
 FROM gcr.io/distroless/nodejs:16
 WORKDIR /app
-COPY --from=builder /app ./
-CMD ["index.js"]
+COPY --from=builder /app .
+
+CMD ["src/app.js"] # or your actual entry file
