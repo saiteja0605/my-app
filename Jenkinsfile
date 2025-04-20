@@ -9,8 +9,8 @@ pipeline {
             steps {
                 script {
                     checkout([$class: 'GitSCM',
-                        branches: [[name: 'refs/heads/main']], 
-                        userRemoteConfigs: [[url: 'https://github.com/saiteja0605/my-app.git', credentialsId: 'docker-hub-creds']]
+                        branches: [[name: '*/main']], 
+                        userRemoteConfigs: [[url: 'https://github.com/saiteja0605/my-app.git']]
                     ])
                 }
             }
