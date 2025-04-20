@@ -18,6 +18,18 @@ pipeline {
             }
         }
 
+        stage('Verify Docker Access') {
+            steps {
+                script {
+                    sh '''
+                    echo "PATH: $PATH"
+                    echo "Docker binary location: $(which docker)"
+                    docker info || { echo 'Docker is not accessible'; exit 1; }
+                    '''
+                }
+            }
+        }
+
         stage('Build Distroless Image') {
             steps {
                 script {
