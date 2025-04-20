@@ -9,7 +9,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 cleanWs()
-                checkout([
+                checkout([ 
                     $class: 'GitSCM',
                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[
