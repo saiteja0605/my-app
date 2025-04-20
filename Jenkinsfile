@@ -7,7 +7,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                // Explicitly checkout the 'main' branch
+                git branch: 'main', url: 'https://github.com/saiteja0605/my-app.git'
             }
         }
 
@@ -57,12 +58,10 @@ pipeline {
     }
     post {
         always {
-            
             sh 'docker logout || true'
             cleanWs()
         }
         success {
-            
             slackSend channel: '#deployments',
                 color: 'good',
                 message: """SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}
@@ -71,7 +70,6 @@ pipeline {
                 Commit: ${env.GIT_COMMIT.take(8)}"""
         }
         failure {
-            
             slackSend channel: '#alerts',
                 color: 'danger',
                 message: """FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}
