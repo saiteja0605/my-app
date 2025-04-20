@@ -1,7 +1,6 @@
 pipeline {
     agent any
     environment {
-  
         DOCKER_IMAGE = "saiteja0605/finocplus:build-${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(8)}"
         KUBE_NAMESPACE = "finocplus-prod"
     }
@@ -16,11 +15,11 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker build \
-                      --no-cache \
-                      -t ${DOCKER_IMAGE} \
-                      -t saiteja0605/finocplus:latest \
-                      .
+                    docker build \\
+                      --no-cache \\
+                      -t ${DOCKER_IMAGE} \\
+                      -t saiteja0605/finocplus:latest \\
+                      . || { echo 'Docker build failed'; exit 1; }
                     """
                 }
             }
@@ -29,17 +28,15 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-              
                     withCredentials([usernamePassword(
-                        credentialsId: 'docker-hub-creds',  
+                        credentialsId: 'docker-hub-creds',
                         usernameVariable: 'DOCKER_USER',
                         passwordVariable: 'DOCKER_PASS'
                     )]) {
                         sh """
-                        echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
-                        docker push ${DOCKER_IMAGE}
-                        docker push saiteja0605/finocplus:latest
-                        docker logout
+                        echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin || { echo 'Docker login failed'; exit 1; }
+                        docker push ${DOCKER_IMAGE} || { echo 'Push failed for versioned tag'; exit 1; }
+                        docker push saiteja0605/finocplus:latest || { echo 'Push failed for latest tag'; exit 1; }
                         """
                     }
                 }
@@ -50,9 +47,9 @@ pipeline {
             steps {
                 script {
                     sh """
-                    sed -i 's|image:.*|image: ${DOCKER_IMAGE}|g' k8s/deployment.yaml
-                    kubectl apply -f k8s/deployment.yaml -n ${KUBE_NAMESPACE}
-                    kubectl rollout status deployment/finocplus-deployment -n ${KUBE_NAMESPACE}
+                    sed -i 's|image:.*|image: ${DOCKER_IMAGE}|g' k8s/deployment.yaml || { echo 'Image tag replacement failed'; exit 1; }
+                    kubectl apply -f k8s/deployment.yaml -n ${KUBE_NAMESPACE} || { echo 'kubectl apply failed'; exit 1; }
+                    kubectl rollout status deployment/finocplus-deployment -n ${KUBE_NAMESPACE} --timeout=120s || { echo 'Rollout failed'; exit 1; }
                     """
                 }
             }
@@ -63,6 +60,23 @@ pipeline {
             
             sh 'docker logout || true'
             cleanWs()
+        }
+        success {
+            
+            slackSend channel: '#deployments',
+                color: 'good',
+                message: """SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}
+                Image: ${DOCKER_IMAGE}
+                Namespace: ${KUBE_NAMESPACE}
+                Commit: ${env.GIT_COMMIT.take(8)}"""
+        }
+        failure {
+            
+            slackSend channel: '#alerts',
+                color: 'danger',
+                message: """FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}
+                Commit: ${env.GIT_COMMIT.take(8)}
+                Build URL: ${env.BUILD_URL}"""
         }
     }
 }
