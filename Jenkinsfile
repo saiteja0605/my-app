@@ -65,15 +65,18 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    sh """
-                    sed -i 's|image:.*|image: ${DOCKER_IMAGE}|g' k8s/deployment.yaml || { echo 'Image tag replacement failed'; exit 1; }
-                    kubectl apply -f k8s/deployment.yaml -n ${KUBE_NAMESPACE} || { echo 'kubectl apply failed'; exit 1; }
-                    kubectl rollout status deployment/finocplus-deployment -n ${KUBE_NAMESPACE} --timeout=120s || { echo 'Rollout failed'; exit 1; }
-                    """
+                    withCredentials([file(credentialsId: 'kubeconfig-prod', variable: 'KUBECONFIG')]) {
+                        sh """
+                        sed -i 's|image:.*|image: ${DOCKER_IMAGE}|g' k8s/deployment.yaml || { echo 'Image tag replacement failed'; exit 1; }
+                        kubectl apply -f k8s/deployment.yaml -n ${KUBE_NAMESPACE} || { echo 'kubectl apply failed'; exit 1; }
+                        kubectl rollout status deployment/finocplus-deployment -n ${KUBE_NAMESPACE} --timeout=120s || { echo 'Rollout failed'; exit 1; }
+                        """
+                    }
                 }
             }
         }
     }
+
     post {
         always {
             sh 'docker logout || true'
