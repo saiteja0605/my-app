@@ -307,3 +307,86 @@ Deploy the image to the Kubernetes cluster using kubectl.
 
 By pushing the my-app directory to GitHub, we can set up the automated CI/CD pipeline, and Jenkins will run the pipeline and autoamtes the deployments.
 
+🔧 Tools for Monitoring & Alerting (CI/CD + Kubernetes Setup)
+
+1. CPU & Memory Monitoring (Kubernetes Cluster)
+
+Tool:
+Prometheus (for metrics collection)
+Grafana (for visualization)
+
+Setup Steps:
+
+Install using Helm:
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install monitoring prometheus-community/kube-prometheus-stack
+
+Access Grafana UI:
+
+kubectl port-forward svc/monitoring-grafana 3000:80 -n default
+Login to Grafana (admin/admin by default) and import Kubernetes dashboards.
+
+Set alerts in Grafana (e.g., when CPU > 80%, memory > 75%).
+
+2. CI/CD Failure Monitoring (Jenkins Pipeline Failures)
+Tool:
+
+Jenkins Email/Slack Plugin
+
+Prometheus + Grafana (optional)
+
+Setup Steps:
+
+Install Jenkins plugins:
+
+Email Extension Plugin
+
+Slack Notification Plugin
+
+Configure email or Slack under: Manage Jenkins → Configure System
+
+Add this to your Jenkinsfile for email/slack:
+
+post {
+    failure {
+        mail to: 'team@example.com',
+             subject: "Build Failed: ${env.JOB_NAME}",
+             body: "Check Jenkins for details."
+    }
+}
+
+3. Application Failure Monitoring (Node.js App)
+Tool:
+
+Liveness & Readiness Probes (already set up in deployment.yaml)
+
+Prometheus + Grafana (for custom app metrics, optional)
+
+kubectl get pods (to check crash loops)
+
+Setup Steps:
+
+our current Kubernetes deployment already uses livenessProbe and readinessProbe, which restart the app if it becomes unresponsive.
+
+For extra monitoring, expose metrics with prom-client in our Node.js app and let Prometheus scrape it.
+
+4. Alerting
+   
+Tool:
+
+Grafana Alerts or Prometheus Alertmanager
+
+Setup Steps:
+
+In Grafana:
+
+Go to any panel → Click Alert → Create alert rule.
+
+Set condition like:
+
+CPU usage > 80% for 5m
+
+Container restarts > 3
+
+Add notification channel (Slack, Email, etc.)
