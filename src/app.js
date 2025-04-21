@@ -3,7 +3,7 @@ const app = express();
 const PORT = 8080; 
 
 app.get('/', (req, res) => {
-  res.send('Hello! This is finocplus CI-CD Pipeline');
+  res.send('Hello ! This is finocplus CI-CD Pipeline');
 });
 
 const server = app.listen(PORT, '0.0.0.0', () => {
