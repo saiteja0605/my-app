@@ -9,7 +9,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 cleanWs()
-                checkout([ 
+                checkout([
                     $class: 'GitSCM',
                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[
@@ -36,11 +36,11 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker build --no-cache \
-  -t saiteja0605/finocplus:build-${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(8)} \
-  -t saiteja0605/finocplus:latest \
-  . || { echo 'Docker build failed'; exit 1; }
-
+                    docker build \\
+                      --no-cache \\
+                      -t ${DOCKER_IMAGE} \\
+                      -t saiteja0605/finocplus:latest \\
+                      . || { echo 'Docker build failed'; exit 1; }
                     """
                 }
             }
@@ -69,12 +69,14 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'kubeconfig-prod', variable: 'KUBECONFIG')]) {
                         sh """
+                        # Replace the image tag in the deployment YAML with the newly built image
                         sed -i 's|image:.*|image: ${DOCKER_IMAGE}|g' k8s/deployment.yaml || { echo 'Image tag replacement failed'; exit 1; }
 
                         echo "--- DEBUG: kubeconfig and cluster info ---"
                         kubectl config view
                         kubectl cluster-info || { echo 'Cluster unreachable'; exit 1; }
 
+                        # Apply the updated deployment YAML
                         kubectl apply -f k8s/deployment.yaml -n ${KUBE_NAMESPACE} || { echo 'kubectl apply failed'; exit 1; }
                         kubectl rollout status deployment/finocplus-deployment -n ${KUBE_NAMESPACE} --timeout=120s || { echo 'Rollout failed'; exit 1; }
                         """
