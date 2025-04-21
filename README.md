@@ -312,7 +312,9 @@ By pushing the my-app directory to GitHub, we can set up the automated CI/CD pip
 1. CPU & Memory Monitoring (Kubernetes Cluster)
 
 Tool:
+
 Prometheus (for metrics collection)
+
 Grafana (for visualization)
 
 Setup Steps:
@@ -320,11 +322,13 @@ Setup Steps:
 Install using Helm:
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
 helm install monitoring prometheus-community/kube-prometheus-stack
 
 Access Grafana UI:
 
 kubectl port-forward svc/monitoring-grafana 3000:80 -n default
+
 Login to Grafana (admin/admin by default) and import Kubernetes dashboards.
 
 Set alerts in Grafana (e.g., when CPU > 80%, memory > 75%).
