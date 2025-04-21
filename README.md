@@ -292,6 +292,9 @@ Jenkinsfile
 
 
 
+Now push the my app directory to the github repository and confirm that the jenkins pipeline is triggered and deployment is working.
+
+
 Conclusion:
 
 Once the setup is complete, any commit to the GitHub repository's main branch will trigger the pipeline in Jenkins. The pipeline will:
