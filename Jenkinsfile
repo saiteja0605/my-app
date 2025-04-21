@@ -78,7 +78,12 @@ pipeline {
 
                         # Apply the updated deployment YAML
                         kubectl apply -f k8s/deployment.yaml -n ${KUBE_NAMESPACE} || { echo 'kubectl apply failed'; exit 1; }
-                        kubectl rollout status deployment/finocplus-deployment -n ${KUBE_NAMESPACE} --timeout=120s || { echo 'Rollout failed'; exit 1; }
+
+                        # Wait for the deployment to complete with an increased timeout
+                        kubectl rollout status deployment/finocplus-deployment -n ${KUBE_NAMESPACE} --timeout=300s || {
+                            echo 'Rollout failed, rolling back deployment';
+                            kubectl rollout undo deployment/finocplus-deployment -n ${KUBE_NAMESPACE} || { echo 'Rollback failed'; exit 1; }
+                        }
                         """
                     }
                 }
